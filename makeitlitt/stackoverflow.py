@@ -11,7 +11,11 @@ Tasks:
 4. Argumrents to get detailed or summarized results [flag]
 5. Check for exceptions and internet connection 
 6. Create snippet result for a quick view for user
-
+7. ADD 'Beautify; - [Optional Parameter] to print snippet in a box
+8. ADD functionality: 
+    > to let user see answer 1 by 1, by clicking Enter for next or Press 'X' to break and move to next PAGE
+    > Press 'ESC' to end loop off PAGE
+9. ADD 'result' to get the complete output as a STRING, instead of printing result
 """
 # --------------------- IMPORTS -----------------------
 import requests
@@ -105,15 +109,17 @@ def scrap_stackoverflow_page(page, ans_format):
     [0,{stackoverflow_page_title, answer_count,all_votes, answer_body} ]: SNIPPET[0] Format, Answer Present for the query in current stack overflow page
     """
 
+    # Title of the page
     stackoverflow_page_title = ' '.join(
         page.find("title").get_text(strip=True).split('-')[0:-1])
 
+    # Total number of answers on the page
     answer_count = page.find(
         "h2", {'data-answercount': True}).get_text(strip=True).split()[0]
 
+    # No answer for current page
+    #print("scrap_stackoverflow_page() --> No answer for current page")
     if answer_count == '0':
-        # No answer for current page
-        #print("scrap_stackoverflow_page() --> No answer for current page")
         return [-1, stackoverflow_page_title]
 
     # First Vote is for the Question, rest are for answers
@@ -125,13 +131,27 @@ def scrap_stackoverflow_page(page, ans_format):
     # Just taking answer body by [1:]
     answer_body = page.find_all("div", class_='s-prose js-post-body')[1:]
 
+    # DETAILED answer requested in arguments
     if ans_format == 1:
-        #print("scrap_stackoverflow_page() --> Detailed answer returned")
         return [1, {'stackoverflow_page_title': stackoverflow_page_title, 'answer_count': answer_count, 'all_votes': all_votes, 'answer_body': answer_body}]
 
+    # Summarised CODE SNIPPETS requested in arguments
     if ans_format == 0:
         #print("scrap_stackoverflow_page() --> Snippet Summarized format answer returned")
-        pass
+        answer_per_snippet_collection = []
+
+        # Traversing each answer present in current page
+        for body in answer_body:
+            snippet_collection = []
+            #print("Code Block, Total Snippets in ans->",len(body.find_all("pre")))
+
+            # Traversing each Code Snippet in an answer
+            for snippet in body.find_all("pre"):
+                #print("Inside Snnippet loop\n\nSnippert containts->",len(snippet.get_text()))
+                snippet_collection.append(snippet.get_text())
+            answer_per_snippet_collection.append(snippet_collection)
+
+        return[0, {'stackoverflow_page_title': stackoverflow_page_title, 'answer_count': answer_count, 'all_votes': all_votes, 'answer_body': answer_per_snippet_collection}]
 
 
 # ----------------------------------------------
@@ -185,6 +205,7 @@ def get_stackoverflow_result(query, limit=2, **parameters):
             #print(url + " --> Status Code: " + str(resp.status_code))
             soup = bs(resp.text, features="html.parser")
 
+            #print("Hitting scrap_stackoverflow_page() with ans_format= ",default_parameters["ans_format"])
             page_result = scrap_stackoverflow_page(
                 soup, default_parameters["ans_format"])
 
@@ -229,7 +250,44 @@ def get_stackoverflow_result(query, limit=2, **parameters):
             # -----------------  SNIPPET ANSWER FORMAT -----------------------
             # -----------------------------------------------------------------
             elif page_result[0] == 0:
-                pass
+                # Summarised CODE SNIPPETS[0] Answer Present for the query in current stack overflow page
+                page_details = page_result[1]
+                #{'stackoverflow_page_title': stackoverflow_page_title, 'answer_count': answer_count, 'all_votes': all_votes, 'answer_body': answer_body}
+
+                highlight(char="*")
+                print(
+                    f"\nPage ({page_count}) TITLE - ", page_details["stackoverflow_page_title"])
+                print(
+                    f"Page Vote: {page_details['all_votes'][0]} | \tTotal Answers Present: {page_details['answer_count']} | \tAnswer Limit: {limit} | \tFormat: CODE-SNIPPET")
+
+                ans_count = 0  # To count the answer number and get votes based on index
+                limit_breaker = 0  # To check the number of answer printed and break when reached limit
+
+                # print(page_details['answer_body'])
+                for snippet_collection in page_details['answer_body']:
+                    # snippet_collection is list of all snippets present in that answer
+                    ans_count += 1
+
+                    # Skip if no snippet in the answer
+                    if len(snippet_collection) == 0:
+                        continue
+
+                    # Incrementing limit breaker only for printed answer
+                    limit_breaker += 1
+                    highlight(n=1)
+                    print(
+                        f"--> ANSWER No. {ans_count} || VOTES: {page_details['all_votes'][ans_count]} <--")
+
+                    # Traversing all snippets in snippet_collection of answer
+                    for snippet in snippet_collection:
+                        print(snippet)
+                        print("."*100)
+
+                    highlight(n=2)
+
+                    # Break if limit for answer to be displayed is reached
+                    if limit_breaker == limit:
+                        break
 
 
 # ------------------------------------------------
@@ -242,5 +300,5 @@ if __name__ == '__main__':
     #website = 'stackoverflow.com'
     # print(*get_google_searchResult_Links(query,website),sep="\n")
     # scrap_stackoverflow_page(query)
-    get_stackoverflow_result(query, ans_format=1)
+    get_stackoverflow_result(query, ans_format=0)
     #get_stackoverflow_result(query_with_noAnswers, ans_format=1)
