@@ -1,30 +1,56 @@
 """
 Tasks:
-1. Scrap data from each URL
-2. Get question and question vote count
-3. Check total Answers present in page
+1. Scrap data from each URL -- DONE
+2. Get question and question vote count -- DONE
+3. Check total Answers present in page -- DONE
     If present:
-        1. Get Answer and anser vote count
-        2. Scrap code from answer
-        3. Display answer and vote count
+        1. Get Answer and anser vote count -- DONE
+        2. Scrap code from answer -- DONE
+        3. Display answer and vote count -- DONE
 
-4. Argumrents to get detailed or summarized results [flag]
-5. Check for exceptions and internet connection 
-6. Create snippet result for a quick view for user
-7. ADD 'Beautify; - [Optional Parameter] to print snippet in a box
+4. Argumrents to get detailed or summarized results [flag] -- DONE
+5. Check for exceptions and internet connection -- DONE
+6. Create snippet result for a quick view for user -- DONE
+7. ADD method to print snippet in a box. -- DONE
 8. ADD functionality: 
     > to let user see answer 1 by 1, by clicking Enter for next or Press 'X' to break and move to next PAGE
     > Press 'ESC' to end loop off PAGE
-9. ADD 'result' to get the complete output as a STRING, instead of printing result
+9. ADD 'result' [Optional Parameter] to get the complete output as a STRING, instead of printing result
+10. ADD 'verified' [Optional Parameter] as an optional parameter to only display the verified answer from the page
+11. Store complete print in a List[..,] named 'search_result' and then later join as String to print/return just as implemented in 'text_in_box()' method.
+    Benifits:
+        > Ease in implementing Break/Next option to move on page over a loop
+        > Ease to implement the 'result' [Optional Parameter] 
 """
 # --------------------- IMPORTS -----------------------
 import requests
 import re
 from bs4 import BeautifulSoup as bs
 
+# -------------------- Decorator Function For highlighting SNIPPETS in answer --------------------------
+
+
+def text_in_box(value):
+    """
+    >General Method<
+    Prints the given string in a Box design format
+    """
+    length = max([len(line) for line in value.split("\n")])
+
+    textBox = ["\t"+"."*(length+8)+"\n"]
+
+    for textLine in value.split("\n"):
+        if len(textLine) == 0:
+            continue
+        textLine = "\t.   "+textLine + (" "*(length-len(textLine)+3)+".\n")
+        textBox.append(textLine)
+
+    textBox.append("\t"+"."*(length+8)+"\n")
+
+    return ''.join(textBox)
+
+
 # -------------------- Decorator Function For highlighting answer body --------------------------
-
-
 def highlight(char='-', n=0):
     if n == 1:
         print("\n" + char*100)
@@ -169,7 +195,12 @@ def get_stackoverflow_result(query, limit=2, **parameters):
     ans_format [INT]: 
         0 - Display only code snippets from answer (DEFAULT)
         1 - Display detailed answer
+
+    Verified [BOOL]: 
+        <TRUE> - To display only the Verified Accepted Correct Answer on the Stack overflow page.
+        <FALSE> - To display all the result within the limit. [DEFAULT]
     """
+    search_result = []  # To get all the info in the list as string
 
     default_parameters = {'ans_format': 0}
     # parameter check & update
@@ -195,9 +226,8 @@ def get_stackoverflow_result(query, limit=2, **parameters):
         # To run test for  result
 
         highlight(char='*', n=1)
-        highlight(char='*')
         print("Stack Overflow Results:")
-        highlight(char='*')
+        # highlight(char='*')
 
         for url in query_links[0:2]:
             page_count += 1
@@ -274,16 +304,16 @@ def get_stackoverflow_result(query, limit=2, **parameters):
 
                     # Incrementing limit breaker only for printed answer
                     limit_breaker += 1
-                    highlight(n=1)
+                    highlight(n=2)
                     print(
                         f"--> ANSWER No. {ans_count} || VOTES: {page_details['all_votes'][ans_count]} <--")
 
                     # Traversing all snippets in snippet_collection of answer
                     for snippet in snippet_collection:
-                        print(snippet)
-                        print("."*100)
+                        print(text_in_box(snippet))
+                        # print("."*100)
 
-                    highlight(n=2)
+                    highlight()
 
                     # Break if limit for answer to be displayed is reached
                     if limit_breaker == limit:
