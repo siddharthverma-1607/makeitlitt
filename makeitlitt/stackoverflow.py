@@ -15,12 +15,17 @@ Tasks:
 8. ADD functionality: 
     > to let user see answer 1 by 1, by clicking Enter for next or Press 'X' to break and move to next PAGE
     > Press 'ESC' to end loop off PAGE
-9. ADD 'result' [Optional Parameter] to get the complete output as a STRING, instead of printing result
+9. ADD 'result' [Optional Parameter] - [INT] to get the complete output as a STRING, instead of printing result
+    > 0 [DEFAULT] - To print the result
+    > 1 - To get search_result [List] as return for search result
+    > 2 - Get result as key:value pair data
 10. ADD 'verified' [Optional Parameter] as an optional parameter to only display the verified answer from the page
-11. Store complete print in a List[..,] named 'search_result' and then later join as String to print/return just as implemented in 'text_in_box()' method.
-    Benifits:
+11. Store complete print in a List[..,answer_pages] named 'search_result' and then later join as String to print/return just as implemented in 'text_in_box()' method.
+    Benifits: -- DONE
         > Ease in implementing Break/Next option to move on page over a loop
-        > Ease to implement the 'result' [Optional Parameter] 
+        > Ease to implement the 'result' [Optional Parameter]
+        > STORE answer_pages as dictionary as {'page-1':'<page 1 data>', 'page-2':'<page 2 data>',...,'page-n':'<page n data>'} 
+12. Implement a 'print_stackOverflow_result' method to display result with implementing STEP (8) within it
 """
 # --------------------- IMPORTS -----------------------
 import requests
@@ -53,11 +58,14 @@ def text_in_box(value):
 # -------------------- Decorator Function For highlighting answer body --------------------------
 def highlight(char='-', n=0):
     if n == 1:
-        print("\n" + char*100)
+        pattern = "\n" + char*100
+        return pattern
     elif n == 2:
-        print(char*100 + "\n")
+        pattern = char*100 + "\n"
+        return pattern
     else:
-        print(char * 100)
+        pattern = char * 100
+        return pattern
 
 
 def get_google_searchResult_Links(query, website=0):
@@ -197,8 +205,8 @@ def get_stackoverflow_result(query, limit=2, **parameters):
         1 - Display detailed answer
 
     Verified [BOOL]: 
-        <TRUE> - To display only the Verified Accepted Correct Answer on the Stack overflow page.
-        <FALSE> - To display all the result within the limit. [DEFAULT]
+    <TRUE> - To display only the Verified Accepted Correct Answer on the Stack overflow page.
+    <FALSE> - To display all the result within the limit. [DEFAULT]
     """
     search_result = []  # To get all the info in the list as string
 
@@ -225,10 +233,12 @@ def get_stackoverflow_result(query, limit=2, **parameters):
         # Results found with query search
         # To run test for  result
 
-        highlight(char='*', n=1)
-        print("Stack Overflow Results:")
-        # highlight(char='*')
+        search_result.append(highlight(char='*', n=1) +
+                             "Stack Overflow Results:")
 
+        answer_pages = []  # List to store result from each Stack overflow page url in query_links
+
+        # LOOP to traverse over stack overflow pages
         for url in query_links[0:2]:
             page_count += 1
             resp = requests.get(url)
@@ -244,51 +254,52 @@ def get_stackoverflow_result(query, limit=2, **parameters):
             # -----------------------------------------------------------------
             if page_result[0] == -1:
                 # No Answer for the query in current stack overflow page
-                highlight(n=1)
-                print(
-                    f"Page {page_count} Title - ", page_result[1])
-                print("\n\t----> NO ANSWERS PRESENT for Current Page <-----")
-                highlight(n=2)
+                answer_pages.append(
+                    highlight(n=1) + f"\nPage {page_count} Title - ", page_result[1] + "\n\t----> NO ANSWERS PRESENT for Current Page <-----\n" + highlight(n=2))
 
             # -----------------------------------------------------------------
             # -----------------  DETAILED ANSWER FORMAT -----------------------
             # -----------------------------------------------------------------
             elif page_result[0] == 1:
                 # DETAILED[1] Answer Present for the query in current stack overflow page
+
+                # String to store complete result of current page and later to get appended in answer_page
+                current_detailed_page = ''
+
                 page_details = page_result[1]
                 #{'stackoverflow_page_title': stackoverflow_page_title, 'answer_count': answer_count, 'all_votes': all_votes, 'answer_body': answer_body}
 
-                highlight(n=1)
-                highlight()
-                print(
-                    f"Page {page_count} Title - ", page_details["stackoverflow_page_title"])
-                print(
-                    f"Page Vote: {page_details['all_votes'][0]} | \tTotal Answers Present: {page_details['answer_count']} | \tAnswer Limit: {limit} | \tFormat: DETAILED")
+                current_detailed_page += highlight(n=1)
+                current_detailed_page += f"\nPage {page_count} Title - " + \
+                    page_details["stackoverflow_page_title"]
+                current_detailed_page += f"Page Vote: {page_details['all_votes'][0]} | \tTotal Answers Present: {page_details['answer_count']} | \tAnswer Limit: {limit} | \tFormat: DETAILED"
 
                 ans_count = 0
                 for body in page_details['answer_body'][0:limit]:
                     ans_count += 1
-                    highlight(char='*', n=1)
-                    print(
-                        f"--> ANSWER VOTES: {page_details['all_votes'][ans_count]} <--")
-                    print(body.get_text())
-                    highlight(char='*', n=2)
+                    current_detailed_page += highlight(char='*', n=1)
+                    current_detailed_page += f"\n--> ANSWER VOTES: {page_details['all_votes'][ans_count]} <--"
+                    current_detailed_page += body.get_text() + highlight(char='*', n=2)
 
-                highlight(n=1)
+                current_detailed_page += highlight(n=1)
+                answer_pages.append(current_detailed_page)
 
             # -----------------------------------------------------------------
             # -----------------  SNIPPET ANSWER FORMAT -----------------------
             # -----------------------------------------------------------------
             elif page_result[0] == 0:
                 # Summarised CODE SNIPPETS[0] Answer Present for the query in current stack overflow page
+                # String to store complete result of current page and later to get appended in answer_page
+                current_snippet_page = ''
+
                 page_details = page_result[1]
                 #{'stackoverflow_page_title': stackoverflow_page_title, 'answer_count': answer_count, 'all_votes': all_votes, 'answer_body': answer_body}
 
-                highlight(char="*")
-                print(
-                    f"\nPage ({page_count}) TITLE - ", page_details["stackoverflow_page_title"])
-                print(
-                    f"Page Vote: {page_details['all_votes'][0]} | \tTotal Answers Present: {page_details['answer_count']} | \tAnswer Limit: {limit} | \tFormat: CODE-SNIPPET")
+                current_snippet_page += highlight(char="*")
+                current_snippet_page += f"\nPage ({page_count}) TITLE - " + \
+                    page_details["stackoverflow_page_title"]
+
+                current_snippet_page += f"\nPage Vote: {page_details['all_votes'][0]} | \tTotal Answers Present: {page_details['answer_count']} | \tAnswer Limit: {limit} | \tFormat: CODE-SNIPPET\n"
 
                 ans_count = 0  # To count the answer number and get votes based on index
                 limit_breaker = 0  # To check the number of answer printed and break when reached limit
@@ -304,20 +315,26 @@ def get_stackoverflow_result(query, limit=2, **parameters):
 
                     # Incrementing limit breaker only for printed answer
                     limit_breaker += 1
-                    highlight(n=2)
-                    print(
-                        f"--> ANSWER No. {ans_count} || VOTES: {page_details['all_votes'][ans_count]} <--")
+                    current_snippet_page += highlight(n=2)
+                    current_snippet_page += f"--> ANSWER No. {limit_breaker} || VOTES: {page_details['all_votes'][ans_count]} <--\n"
 
                     # Traversing all snippets in snippet_collection of answer
                     for snippet in snippet_collection:
-                        print(text_in_box(snippet))
-                        # print("."*100)
+                        current_snippet_page += text_in_box(snippet)
 
-                    highlight()
+                    current_snippet_page += highlight(n=2)
 
                     # Break if limit for answer to be displayed is reached
                     if limit_breaker == limit:
                         break
+
+                    # print(current_snippet_page)
+
+                answer_pages.append(current_snippet_page)
+
+        # ------------- OUT of LOOP to traverse over stack overflow pages ---------------
+        search_result.append(answer_pages)
+        return search_result
 
 
 # ------------------------------------------------
@@ -330,5 +347,5 @@ if __name__ == '__main__':
     #website = 'stackoverflow.com'
     # print(*get_google_searchResult_Links(query,website),sep="\n")
     # scrap_stackoverflow_page(query)
-    get_stackoverflow_result(query, ans_format=0)
+    print(get_stackoverflow_result(query, ans_format=0))
     #get_stackoverflow_result(query_with_noAnswers, ans_format=1)
