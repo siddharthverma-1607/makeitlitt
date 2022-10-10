@@ -24,7 +24,7 @@ Tasks:
     Benifits: -- DONE
         > Ease in implementing Break/Next option to move on page over a loop
         > Ease to implement the 'result' [Optional Parameter]
-        > STORE answer_pages as dictionary as {'page-1':'<page 1 data>', 'page-2':'<page 2 data>',...,'page-n':'<page n data>'} 
+        > STORE answer_pages as dictionary as {'page-1':'<page 1 data>', 'page-2':'<page 2 data>',...,'page-n':'<page n data>'} -- DONE
 12. Implement a 'print_stackOverflow_result' method to display result with implementing STEP (8) within it
 """
 # --------------------- IMPORTS -----------------------
@@ -66,6 +66,22 @@ def highlight(char='-', n=0):
     else:
         pattern = char * 100
         return pattern
+
+
+# ---------------------- Method to print the stack overflow results ------------------------
+def print_stackOverflow_result(search_result, ans_format=0):
+    """
+    Method to print the search results.
+
+    Parameters:
+    @search_result - [LIST] 
+    @ans_format [INT]: 
+    0 - Display only code snippets from answer (DEFAULT)
+    1 - Display detailed answer
+    """
+    pass
+
+# -------------------- Method to get all stack overflow URLs from google for the searched query --------------------------
 
 
 def get_google_searchResult_Links(query, website=0):
@@ -124,9 +140,8 @@ def get_google_searchResult_Links(query, website=0):
     else:
         return result_links
 
-# ----------------------------------------------
 
-
+# ---------------------- Method to scrap the stack overflow page ------------------------
 def scrap_stackoverflow_page(page, ans_format):
     """
     Method to scrap the Stack Overflow page and return the required fields
@@ -188,27 +203,37 @@ def scrap_stackoverflow_page(page, ans_format):
         return[0, {'stackoverflow_page_title': stackoverflow_page_title, 'answer_count': answer_count, 'all_votes': all_votes, 'answer_body': answer_per_snippet_collection}]
 
 
-# ----------------------------------------------
-
-
+# ---------------------- Method to return result for the searched query on stack overflow ------------------------
 def get_stackoverflow_result(query, limit=2, **parameters):
     """
     Method to show stack overflow results.
 
     Parameters:
     query [STRING]: stack overflow query to search
-    limit [INT]: Number of results to display per page (DEFAULT - 2)
+    limit [INT]: Number of answers to display per page (DEFAULT - 2)
 
     Optional keyword arguments::
-    ans_format [INT]: 
-        0 - Display only code snippets from answer (DEFAULT)
-        1 - Display detailed answer
+    @ans_format [INT]: 
+    > 0 - Display only code snippets from answer (DEFAULT)
+    > 1 - Display detailed answer
+
+    @result [INT]:
+    > 0 [DEFAULT] - To print the result
+    > 1 - To get search_result {DICTIONARY} as return for search result
+    > 2 - Get result as key:value pair data with raw inputs and only formated answer body
 
     Verified [BOOL]: 
     <TRUE> - To display only the Verified Accepted Correct Answer on the Stack overflow page.
     <FALSE> - To display all the result within the limit. [DEFAULT]
+
+    Return:
+    search_result {DICTIONARY}:    
+    > 'result_title': [STRING] <Title of the Result>
+    > 'page-n': [STRING] <page_data>, Where 'n' is page number & page_data is formated page result
+    > 'pages': [INT] <Number of pages in result>
     """
-    search_result = []  # To get all the info in the list as string
+    # To get all the info in the dictionary as <page-n> : <page_data>, Where 'n' is page number & page_data is formated page result
+    search_result = {'result_title': ''}
 
     default_parameters = {'ans_format': 0}
     # parameter check & update
@@ -220,6 +245,7 @@ def get_stackoverflow_result(query, limit=2, **parameters):
         else:
             default_parameters[parameter_key] = parameters[parameter_key]
 
+    # Get all search result for the query from google
     query_links = get_google_searchResult_Links(
         query+" stack overflow", 'stackoverflow.com')
 
@@ -233,10 +259,8 @@ def get_stackoverflow_result(query, limit=2, **parameters):
         # Results found with query search
         # To run test for  result
 
-        search_result.append(highlight(char='*', n=1) +
-                             "Stack Overflow Results:")
-
-        answer_pages = []  # List to store result from each Stack overflow page url in query_links
+        search_result['result_title'] = (highlight(char='*', n=1) +
+                                         "\nStack Overflow Results:\n")
 
         # LOOP to traverse over stack overflow pages
         for url in query_links[0:2]:
@@ -254,8 +278,9 @@ def get_stackoverflow_result(query, limit=2, **parameters):
             # -----------------------------------------------------------------
             if page_result[0] == -1:
                 # No Answer for the query in current stack overflow page
-                answer_pages.append(
-                    highlight(n=1) + f"\nPage {page_count} Title - ", page_result[1] + "\n\t----> NO ANSWERS PRESENT for Current Page <-----\n" + highlight(n=2))
+                search_result["page-"+str(page_count)] = highlight(n=1) + f"\nPage {page_count} Title - ", page_result[1] + \
+                    "\n\t----> NO ANSWERS PRESENT for Current Page <-----\n" + \
+                    highlight(n=2)
 
             # -----------------------------------------------------------------
             # -----------------  DETAILED ANSWER FORMAT -----------------------
@@ -282,7 +307,9 @@ def get_stackoverflow_result(query, limit=2, **parameters):
                     current_detailed_page += body.get_text() + highlight(char='*', n=2)
 
                 current_detailed_page += highlight(n=1)
-                answer_pages.append(current_detailed_page)
+
+                search_result["page-" +
+                              str(page_count)] = current_detailed_page
 
             # -----------------------------------------------------------------
             # -----------------  SNIPPET ANSWER FORMAT -----------------------
@@ -328,16 +355,14 @@ def get_stackoverflow_result(query, limit=2, **parameters):
                     if limit_breaker == limit:
                         break
 
-                    # print(current_snippet_page)
-
-                answer_pages.append(current_snippet_page)
+                search_result["page-" +
+                              str(page_count)] = current_snippet_page
 
         # ------------- OUT of LOOP to traverse over stack overflow pages ---------------
-        search_result.append(answer_pages)
         return search_result
 
 
-# ------------------------------------------------
+# ---------------------- Main Method --------------------------
 if __name__ == '__main__':
     print("Process Initiated:")
     #query = "create lambda function in python" + " stack overflow"
@@ -347,5 +372,6 @@ if __name__ == '__main__':
     #website = 'stackoverflow.com'
     # print(*get_google_searchResult_Links(query,website),sep="\n")
     # scrap_stackoverflow_page(query)
-    print(get_stackoverflow_result(query, ans_format=0))
+    get_data = get_stackoverflow_result(query, ans_format=0)
+    print(get_data['result_title'] + get_data['page-2'])
     #get_stackoverflow_result(query_with_noAnswers, ans_format=1)
