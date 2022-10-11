@@ -13,8 +13,7 @@ Tasks:
 6. Create snippet result for a quick view for user -- DONE
 7. ADD method to print snippet in a box. -- DONE
 8. ADD functionality: 
-    > to let user see answer 1 by 1, by clicking Enter for next or Press 'X' to break and move to next PAGE
-    > Press 'ESC' to end loop off PAGE
+    > to let user see page 1 by 1, by clicking Enter for next or Press 'x' + 'ENTER' to break further print results    
 9. ADD 'result' [Optional Parameter] - [INT] to get the complete output as a STRING, instead of printing result
     > 0 [DEFAULT] - To print the result
     > 1 - To get search_result [List] as return for search result
@@ -35,22 +34,27 @@ from bs4 import BeautifulSoup as bs
 # -------------------- Decorator Function For highlighting SNIPPETS in answer --------------------------
 
 
-def text_in_box(value):
+def text_in_box(value, char='.'):
     """
     >General Method<
     Prints the given string in a Box design format
+
+    Paameters:
+    value: String (Single line / multi line)
+    char: Char for box pattern [Default is '.']
     """
     length = max([len(line) for line in value.split("\n")])
 
-    textBox = ["\t"+"."*(length+8)+"\n"]
+    textBox = ["\t"+char*(length+8)+"\n"]
 
     for textLine in value.split("\n"):
         if len(textLine) == 0:
             continue
-        textLine = "\t.   "+textLine + (" "*(length-len(textLine)+3)+".\n")
+        textLine = f"\t{char}   "+textLine + \
+            (" "*(length-len(textLine)+3)+f"{char}\n")
         textBox.append(textLine)
 
-    textBox.append("\t"+"."*(length+8)+"\n")
+    textBox.append("\t"+char*(length+8)+"\n")
 
     return ''.join(textBox)
 
@@ -69,17 +73,30 @@ def highlight(char='-', n=0):
 
 
 # ---------------------- Method to print the stack overflow results ------------------------
-def print_stackOverflow_result(search_result, ans_format=0):
+def print_stackOverflow_result(search_result):
     """
     Method to print the search results.
 
-    Parameters:
-    @search_result - [LIST] 
-    @ans_format [INT]: 
-    0 - Display only code snippets from answer (DEFAULT)
-    1 - Display detailed answer
+    Parameters:    
+    @search_result - {DICTIONARY}     
     """
-    pass
+    print(search_result['result_title'], end='')
+
+    # Printing for results
+    for i in range(1, search_result['total_stackoverflow_pages_results']+1):
+        user_input = ''  # To catch user action to continue or break the results
+        print(search_result['page-'+str(i)], end='')
+
+        user_input = input(
+            "\nPress 'ENTER' for next Page or Press 'x' + 'ENTER' to end result\t")
+        while(user_input not in ['', 'x']):
+            user_input = input(
+                f"\nINVALID INPUT! -> {user_input}\nPress 'ENTER' for next Page or Press 'x' + 'ENTER' to end result\t")
+
+        if user_input == 'x' or (i == search_result['total_stackoverflow_pages_results']):
+            print("\nThat's all folks! :)")
+            break
+
 
 # -------------------- Method to get all stack overflow URLs from google for the searched query --------------------------
 
@@ -233,12 +250,13 @@ def get_stackoverflow_result(query, limit=2, **parameters):
     > 'pages': [INT] <Number of pages in result>
     """
     # To get all the info in the dictionary as <page-n> : <page_data>, Where 'n' is page number & page_data is formated page result
-    search_result = {'result_title': ''}
+    search_result = {'result_title': '',
+                     'total_stackoverflow_pages_results': 0}
 
-    default_parameters = {'ans_format': 0}
+    default_parameters = {'ans_format': 0, 'result': 0}
     # parameter check & update
     for parameter_key in parameters.keys():
-        if parameter_key not in ['ans_format']:
+        if parameter_key not in ['ans_format', 'result']:
             raise TypeError(
                 "'{}' is an invalid keyword argument for get_myString() \nFor more details for valid parameters try:\nhelp(get_myString) OR\nget_myString.__doc__", parameter_key)
 
@@ -262,8 +280,10 @@ def get_stackoverflow_result(query, limit=2, **parameters):
         search_result['result_title'] = (highlight(char='*', n=1) +
                                          "\nStack Overflow Results:\n")
 
+        search_result["total_stackoverflow_pages_results"] = len(query_links)
+
         # LOOP to traverse over stack overflow pages
-        for url in query_links[0:2]:
+        for url in query_links:
             page_count += 1
             resp = requests.get(url)
             #print(url + " --> Status Code: " + str(resp.status_code))
@@ -359,7 +379,10 @@ def get_stackoverflow_result(query, limit=2, **parameters):
                               str(page_count)] = current_snippet_page
 
         # ------------- OUT of LOOP to traverse over stack overflow pages ---------------
-        return search_result
+        if default_parameters["result"] == 0:
+            print_stackOverflow_result(search_result)
+        else:
+            return search_result
 
 
 # ---------------------- Main Method --------------------------
@@ -372,6 +395,7 @@ if __name__ == '__main__':
     #website = 'stackoverflow.com'
     # print(*get_google_searchResult_Links(query,website),sep="\n")
     # scrap_stackoverflow_page(query)
-    get_data = get_stackoverflow_result(query, ans_format=0)
-    print(get_data['result_title'] + get_data['page-2'])
+    #get_data = get_stackoverflow_result(query, ans_format=0)
+    get_stackoverflow_result(query, ans_format=0)
+    #print(get_data['result_title'] + get_data['page-2'])
     #get_stackoverflow_result(query_with_noAnswers, ans_format=1)
