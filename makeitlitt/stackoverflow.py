@@ -13,20 +13,24 @@ Tasks:
 6. Create snippet result for a quick view for user -- DONE
 7. ADD method to print snippet in a box. -- DONE
 8. ADD functionality: 
-    > to let user see page 1 by 1, by clicking Enter for next or Press 'x' + 'ENTER' to break further print results    
-9. ADD 'result' [Optional Parameter] - [INT] to get the complete output as a STRING, instead of printing result
-    > 0 [DEFAULT] - To print the result
-    > 1 - To get search_result [List] as return for search result
-    > 2 - Get result as key:value pair data
+    > to let user see page 1 by 1, by clicking Enter for next or Press 'x' + 'ENTER' to break further print results  -- DONE  
+9. ADD 'result' [Optional Parameter] - [INT] to get the complete output as a STRING, instead of printing result -- DONE
+    > 0 [DEFAULT] - To print the result -- DONE  
+    > 1 - To Get search_result {Dictionary} as return for search result -- DONE  
+    > 2 - To Get search_result + raw data result as key:value pair -- DONE
 10. ADD 'verified' [Optional Parameter] as an optional parameter to only display the verified answer from the page
 11. Store complete print in a List[..,answer_pages] named 'search_result' and then later join as String to print/return just as implemented in 'text_in_box()' method.
     Benifits: -- DONE
-        > Ease in implementing Break/Next option to move on page over a loop
-        > Ease to implement the 'result' [Optional Parameter]
+        > Ease in implementing Break/Next option to move on page over a loop -- DONE  
+        > Ease to implement the 'result' [Optional Parameter] -- DONE
         > STORE answer_pages as dictionary as {'page-1':'<page 1 data>', 'page-2':'<page 2 data>',...,'page-n':'<page n data>'} -- DONE
-12. Implement a 'print_stackOverflow_result' method to display result with implementing STEP (8) within it
+12. Implement a 'print_stackOverflow_result' method to display result with implementing STEP (8) within it -- DONE
+13. STRORE page_result[1] for each page excluding answer_body as we will get that from search_result -- DONE
+14. Format DETAILED Page better -- DONE
+15. Testing + Documentation
 """
 # --------------------- IMPORTS -----------------------
+from unittest import result
 import requests
 import re
 from bs4 import BeautifulSoup as bs
@@ -190,8 +194,9 @@ def scrap_stackoverflow_page(page, ans_format):
 
     # First Vote is for the Question, rest are for answers
     # So, all_votes - 1 = answer_count
-    all_votes = [vote.get_text(strip=True) for vote in page.find_all(
-        "div", class_='js-vote-count flex--item d-flex fd-column ai-center fc-black-500 fs-title')]
+    #all_votes = [vote.get_text(strip=True) for vote in page.find_all("div", class_='js-vote-count flex--item d-flex fd-column ai-center fc-black-500 fs-title')]
+    all_votes = [vote.get_text(strip=True)
+                 for vote in page.select("div[class*='js-vote-count']")]
 
     # post_body contains question body + answer body
     # Just taking answer body by [1:]
@@ -230,11 +235,11 @@ def get_stackoverflow_result(query, limit=2, **parameters):
     limit [INT]: Number of answers to display per page (DEFAULT - 2)
 
     Optional keyword arguments::
-    @ans_format [INT]: 
+    ans_format [INT]: 
     > 0 - Display only code snippets from answer (DEFAULT)
     > 1 - Display detailed answer
 
-    @result [INT]:
+    result [INT]:
     > 0 [DEFAULT] - To print the result
     > 1 - To get search_result {DICTIONARY} as return for search result
     > 2 - Get result as key:value pair data with raw inputs and only formated answer body
@@ -298,7 +303,7 @@ def get_stackoverflow_result(query, limit=2, **parameters):
             # -----------------------------------------------------------------
             if page_result[0] == -1:
                 # No Answer for the query in current stack overflow page
-                search_result["page-"+str(page_count)] = highlight(n=1) + f"\nPage {page_count} Title - ", page_result[1] + \
+                search_result["page-"+str(page_count)] = highlight(char='*') + f"\nPage {page_count} Title - " + page_result[1] + \
                     "\n\t----> NO ANSWERS PRESENT for Current Page <-----\n" + \
                     highlight(n=2)
 
@@ -310,26 +315,36 @@ def get_stackoverflow_result(query, limit=2, **parameters):
 
                 # String to store complete result of current page and later to get appended in answer_page
                 current_detailed_page = ''
+                answer_collections = []
 
                 page_details = page_result[1]
                 #{'stackoverflow_page_title': stackoverflow_page_title, 'answer_count': answer_count, 'all_votes': all_votes, 'answer_body': answer_body}
 
-                current_detailed_page += highlight(n=1)
-                current_detailed_page += f"\nPage {page_count} Title - " + \
+                current_detailed_page += highlight(char='*')
+                current_detailed_page += f"\nPage ({page_count}) Title - " + \
                     page_details["stackoverflow_page_title"]
-                current_detailed_page += f"Page Vote: {page_details['all_votes'][0]} | \tTotal Answers Present: {page_details['answer_count']} | \tAnswer Limit: {limit} | \tFormat: DETAILED"
+                current_detailed_page += f"\nPage Vote: {page_details['all_votes'][0]} | \tTotal Answers Present: {page_details['answer_count']} | \tAnswer Limit: {limit} | \tFormat: DETAILED\n"
 
                 ans_count = 0
                 for body in page_details['answer_body'][0:limit]:
                     ans_count += 1
-                    current_detailed_page += highlight(char='*', n=1)
-                    current_detailed_page += f"\n--> ANSWER VOTES: {page_details['all_votes'][ans_count]} <--"
-                    current_detailed_page += body.get_text() + highlight(char='*', n=2)
+                    current_detailed_page += highlight()
+                    current_detailed_page += f"\n-->  ANSWER No. ({ans_count}) ANSWER VOTES: {page_details['all_votes'][ans_count]} <--\n"
+                    current_detailed_page += body.get_text() + highlight(n=2)
+                    answer_collections.append(body.get_text())
 
-                current_detailed_page += highlight(n=1)
+                # To update search_result if Optional parameter result==2 i.e. to ge raw search data in dictionary
+                if default_parameters["result"] == 2:
+                    raw_search_result = page_details
+                    raw_search_result['answer_body'] = answer_collections
+                    search_result["page-" +
+                                  str(page_count)] = raw_search_result
 
-                search_result["page-" +
-                              str(page_count)] = current_detailed_page
+                else:
+                    search_result["page-" +
+                                  str(page_count)] = current_detailed_page
+                    search_result["page-" +
+                                  str(page_count)+"-ans"] = answer_collections
 
             # -----------------------------------------------------------------
             # -----------------  SNIPPET ANSWER FORMAT -----------------------
@@ -338,6 +353,7 @@ def get_stackoverflow_result(query, limit=2, **parameters):
                 # Summarised CODE SNIPPETS[0] Answer Present for the query in current stack overflow page
                 # String to store complete result of current page and later to get appended in answer_page
                 current_snippet_page = ''
+                answer_collections = []
 
                 page_details = page_result[1]
                 #{'stackoverflow_page_title': stackoverflow_page_title, 'answer_count': answer_count, 'all_votes': all_votes, 'answer_body': answer_body}
@@ -346,6 +362,7 @@ def get_stackoverflow_result(query, limit=2, **parameters):
                 current_snippet_page += f"\nPage ({page_count}) TITLE - " + \
                     page_details["stackoverflow_page_title"]
 
+                #print(f"\nPage Vote: {page_details['all_votes']} | \tTotal Answers Present: {page_details['answer_count']} | \tAnswer Limit: {limit} | \tFormat: CODE-SNIPPET\n")
                 current_snippet_page += f"\nPage Vote: {page_details['all_votes'][0]} | \tTotal Answers Present: {page_details['answer_count']} | \tAnswer Limit: {limit} | \tFormat: CODE-SNIPPET\n"
 
                 ans_count = 0  # To count the answer number and get votes based on index
@@ -363,11 +380,13 @@ def get_stackoverflow_result(query, limit=2, **parameters):
                     # Incrementing limit breaker only for printed answer
                     limit_breaker += 1
                     current_snippet_page += highlight(n=2)
-                    current_snippet_page += f"--> ANSWER No. {limit_breaker} || VOTES: {page_details['all_votes'][ans_count]} <--\n"
+                    current_snippet_page += f"--> ANSWER No. ({limit_breaker}) || VOTES: {page_details['all_votes'][ans_count]} <--\n"
 
                     # Traversing all snippets in snippet_collection of answer
                     for snippet in snippet_collection:
-                        current_snippet_page += text_in_box(snippet)
+                        text_in_box_result = text_in_box(snippet)
+                        current_snippet_page += text_in_box_result
+                        answer_collections.append(text_in_box_result)
 
                     current_snippet_page += highlight(n=2)
 
@@ -375,27 +394,40 @@ def get_stackoverflow_result(query, limit=2, **parameters):
                     if limit_breaker == limit:
                         break
 
-                search_result["page-" +
-                              str(page_count)] = current_snippet_page
+                # To update search_result if Optional parameter result==2 i.e. to ge raw search data in dictionary
+                if default_parameters["result"] == 2:
+                    raw_search_result = page_details
+                    raw_search_result['answer_body'] = answer_collections
+                    search_result["page-" +
+                                  str(page_count)] = raw_search_result
+                else:
+                    search_result["page-" +
+                                  str(page_count)] = current_snippet_page
+                    search_result["page-" +
+                                  str(page_count)+"-ans"] = answer_collections
 
         # ------------- OUT of LOOP to traverse over stack overflow pages ---------------
         if default_parameters["result"] == 0:
             print_stackOverflow_result(search_result)
+        elif default_parameters["result"] == 1:
+            return search_result
         else:
+            # Here, search_result = raw_search_result
             return search_result
 
 
 # ---------------------- Main Method --------------------------
 if __name__ == '__main__':
     print("Process Initiated:")
-    #query = "create lambda function in python" + " stack overflow"
-    query = "create lambda function in python"
+
+    query = "creating class in python"
+    query_to_check_noSnippetAnswers = "git-for-beginners-the-definitive-practical-guide"
     #query_with_noAnswers = "Hybris navigation component anatomy"
     # query="sa5d64sa6"
-    #website = 'stackoverflow.com'
     # print(*get_google_searchResult_Links(query,website),sep="\n")
-    # scrap_stackoverflow_page(query)
-    #get_data = get_stackoverflow_result(query, ans_format=0)
-    get_stackoverflow_result(query, ans_format=0)
-    #print(get_data['result_title'] + get_data['page-2'])
-    #get_stackoverflow_result(query_with_noAnswers, ans_format=1)
+
+    #get_data = get_stackoverflow_result(query)
+    data = get_stackoverflow_result(query, ans_format=0, result=0)
+
+    #get_stackoverflow_result(query_with_noAnswers, ans_format=0)
+    # get_stackoverflow_result(query_to_check_noSnippetAnswers, ans_format=0)
