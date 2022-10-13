@@ -127,7 +127,6 @@ def get_google_searchResult_Links(query, website=0):
     try:
         page = requests.get("https://www.google.dz/search?q="+query)
     except Exception as e:
-        #print("ConnectionError: Please check your system is connected to a network.")
         if e.__class__.__name__ == "ConnectionError":
             raise SystemExit(
                 "ConnectionError! Please check your system is connected to a network.")
@@ -135,10 +134,9 @@ def get_google_searchResult_Links(query, website=0):
             raise SystemExit(e)
 
     soup = bs(page.content, features="html.parser")
-    links = soup.findAll("a")
 
     if website == 0:
-        # Return all search result as no website filter applied
+        # Return all search result, as no constaints on number of website is applied
         result_links = [re.split(":(?=http)", link["href"].replace("/url?q=", ""))[0].split(
             '&')[0] for link in soup.find_all("a", href=re.compile("(?<=/url\?q=)(htt.*://.*)"))]
 
@@ -291,10 +289,9 @@ def get_stackoverflow_result(query, limit=2, **parameters):
         for url in query_links:
             page_count += 1
             resp = requests.get(url)
-            #print(url + " --> Status Code: " + str(resp.status_code))
             soup = bs(resp.text, features="html.parser")
 
-            #print("Hitting scrap_stackoverflow_page() with ans_format= ",default_parameters["ans_format"])
+            # Getting data from the page
             page_result = scrap_stackoverflow_page(
                 soup, default_parameters["ans_format"])
 
@@ -362,13 +359,12 @@ def get_stackoverflow_result(query, limit=2, **parameters):
                 current_snippet_page += f"\nPage ({page_count}) TITLE - " + \
                     page_details["stackoverflow_page_title"]
 
-                #print(f"\nPage Vote: {page_details['all_votes']} | \tTotal Answers Present: {page_details['answer_count']} | \tAnswer Limit: {limit} | \tFormat: CODE-SNIPPET\n")
                 current_snippet_page += f"\nPage Vote: {page_details['all_votes'][0]} | \tTotal Answers Present: {page_details['answer_count']} | \tAnswer Limit: {limit} | \tFormat: CODE-SNIPPET\n"
 
                 ans_count = 0  # To count the answer number and get votes based on index
                 limit_breaker = 0  # To check the number of answer printed and break when reached limit
 
-                # print(page_details['answer_body'])
+                # LOOPING over all the answer body present in the page
                 for snippet_collection in page_details['answer_body']:
                     # snippet_collection is list of all snippets present in that answer
                     ans_count += 1
