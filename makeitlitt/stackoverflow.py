@@ -84,35 +84,39 @@ def print_stackOverflow_result(search_result):
     Parameters:    
     @search_result - {DICTIONARY}     
     """
-    print(search_result['result_title'], end='')
+    try:
+        print(search_result['result_title'], end='')
 
-    # Printing for results
-    for i in range(1, search_result['total_stackoverflow_pages_results']+1):
-        user_input = ''  # To catch user action to continue or break the results
-        print(search_result['page-'+str(i)], end='')
+        # Printing for results
+        for i in range(1, search_result['total_stackoverflow_pages_results']+1):
+            user_input = ''  # To catch user action to continue or break the results
+            print(search_result['page-'+str(i)], end='')
 
-        user_input = input(
-            "\nPress 'ENTER' for next Page or Press 'x' + 'ENTER' to end result\t")
-        while(user_input not in ['', 'x']):
             user_input = input(
-                f"\nINVALID INPUT! -> {user_input}\nPress 'ENTER' for next Page or Press 'x' + 'ENTER' to end result\t")
+                "\nPress 'ENTER' for next Page or Press 'x' + 'ENTER' to end result\t")
+            while(user_input not in ['', 'x']):
+                user_input = input(
+                    f"\nINVALID INPUT! -> {user_input}\nPress 'ENTER' for next Page or Press 'x' + 'ENTER' to end result\t")
 
-        if user_input == 'x' or (i == search_result['total_stackoverflow_pages_results']):
-            print("\nThat's all folks! :)")
-            break
+            if user_input == 'x' or (i == search_result['total_stackoverflow_pages_results']):
+                print("\nThat's all folks! :)")
+                break
+    except Exception as e:
+        raise SystemExit(
+            "Exception caught during print_stackOverflow_result() method.\nStack Trace:\n", e)
 
 
 # -------------------- Method to get all stack overflow URLs from google for the searched query --------------------------
 
 
-def get_google_searchResult_Links(query, website=0):
+def get_google_searchResult_Links(query, domain_name=0):
     """
     Method to get urls results from google search engine
 
     Parameters:
     query [STRING]: stack overflow query to search.
-    website [STRING]: To filter the result based on a particular website.
-                    [Default]: 0 --> Get All results
+    domain [STRING]: To filter the result based on a particular website.
+                    [Default]: 0 --> Get All results irrespective of domain name
 
     Return:
     result_links [List]:
@@ -135,8 +139,8 @@ def get_google_searchResult_Links(query, website=0):
 
     soup = bs(page.content, features="html.parser")
 
-    if website == 0:
-        # Return all search result, as no constaints on number of website is applied
+    if domain_name == 0:
+        # Return all search result, irrespective of domain name
         result_links = [re.split(":(?=http)", link["href"].replace("/url?q=", ""))[0].split(
             '&')[0] for link in soup.find_all("a", href=re.compile("(?<=/url\?q=)(htt.*://.*)"))]
 
@@ -149,7 +153,7 @@ def get_google_searchResult_Links(query, website=0):
 
     for link in soup.find_all("a", href=re.compile("(?<=/url\?q=)(htt.*://.*)")):
         result = re.split(":(?=http)", link["href"].replace("/url?q=", ""))
-        if result[0].find(website) != -1:
+        if result[0].find(domain_name) != -1:
             # Check if result contains url with filtered website
             result_links.append(result[0].split('&')[0])
 
@@ -176,51 +180,53 @@ def scrap_stackoverflow_page(page, ans_format):
     [1,{stackoverflow_page_title, answer_count,all_votes, answer_body} ]: DETAILED[1] Format, Answer Present for the query in current stack overflow page
     [0,{stackoverflow_page_title, answer_count,all_votes, answer_body} ]: SNIPPET[0] Format, Answer Present for the query in current stack overflow page
     """
+    try:
+        # Title of the page
+        stackoverflow_page_title = ' '.join(
+            page.find("title").get_text(strip=True).split('-')[0:-1])
 
-    # Title of the page
-    stackoverflow_page_title = ' '.join(
-        page.find("title").get_text(strip=True).split('-')[0:-1])
+        # Total number of answers on the page
+        answer_count = page.find(
+            "h2", {'data-answercount': True}).get_text(strip=True).split()[0]
 
-    # Total number of answers on the page
-    answer_count = page.find(
-        "h2", {'data-answercount': True}).get_text(strip=True).split()[0]
+        # No answer for current page
+        if answer_count == '0':
+            return [-1, stackoverflow_page_title]
 
-    # No answer for current page
-    #print("scrap_stackoverflow_page() --> No answer for current page")
-    if answer_count == '0':
-        return [-1, stackoverflow_page_title]
+        # First Vote is for the Question, rest are for answers
+        # So, all_votes - 1 = answer_count
+        #all_votes = [vote.get_text(strip=True) for vote in page.find_all("div", class_='js-vote-count flex--item d-flex fd-column ai-center fc-black-500 fs-title')]
+        all_votes = [vote.get_text(strip=True)
+                     for vote in page.select("div[class*='js-vote-count']")]
 
-    # First Vote is for the Question, rest are for answers
-    # So, all_votes - 1 = answer_count
-    #all_votes = [vote.get_text(strip=True) for vote in page.find_all("div", class_='js-vote-count flex--item d-flex fd-column ai-center fc-black-500 fs-title')]
-    all_votes = [vote.get_text(strip=True)
-                 for vote in page.select("div[class*='js-vote-count']")]
+        # post_body contains question body + answer body
+        # Just taking answer body by [1:]
+        answer_body = page.find_all("div", class_='s-prose js-post-body')[1:]
 
-    # post_body contains question body + answer body
-    # Just taking answer body by [1:]
-    answer_body = page.find_all("div", class_='s-prose js-post-body')[1:]
+        # DETAILED answer requested in arguments
+        if ans_format == 1:
+            return [1, {'stackoverflow_page_title': stackoverflow_page_title, 'answer_count': answer_count, 'all_votes': all_votes, 'answer_body': answer_body}]
 
-    # DETAILED answer requested in arguments
-    if ans_format == 1:
-        return [1, {'stackoverflow_page_title': stackoverflow_page_title, 'answer_count': answer_count, 'all_votes': all_votes, 'answer_body': answer_body}]
+        # Summarised CODE SNIPPETS requested in arguments
+        if ans_format == 0:
+            #print("scrap_stackoverflow_page() --> Snippet Summarized format answer returned")
+            answer_per_snippet_collection = []
 
-    # Summarised CODE SNIPPETS requested in arguments
-    if ans_format == 0:
-        #print("scrap_stackoverflow_page() --> Snippet Summarized format answer returned")
-        answer_per_snippet_collection = []
+            # Traversing each answer present in current page
+            for body in answer_body:
+                snippet_collection = []
+                #print("Code Block, Total Snippets in ans->",len(body.find_all("pre")))
 
-        # Traversing each answer present in current page
-        for body in answer_body:
-            snippet_collection = []
-            #print("Code Block, Total Snippets in ans->",len(body.find_all("pre")))
+                # Traversing each Code Snippet in an answer
+                for snippet in body.find_all("pre"):
+                    #print("Inside Snnippet loop\n\nSnippert containts->",len(snippet.get_text()))
+                    snippet_collection.append(snippet.get_text())
+                answer_per_snippet_collection.append(snippet_collection)
 
-            # Traversing each Code Snippet in an answer
-            for snippet in body.find_all("pre"):
-                #print("Inside Snnippet loop\n\nSnippert containts->",len(snippet.get_text()))
-                snippet_collection.append(snippet.get_text())
-            answer_per_snippet_collection.append(snippet_collection)
+            return[0, {'stackoverflow_page_title': stackoverflow_page_title, 'answer_count': answer_count, 'all_votes': all_votes, 'answer_body': answer_per_snippet_collection}]
 
-        return[0, {'stackoverflow_page_title': stackoverflow_page_title, 'answer_count': answer_count, 'all_votes': all_votes, 'answer_body': answer_per_snippet_collection}]
+    except Exception as e:
+        return [-1, stackoverflow_page_title + "\nUnable to extract result from the page. Kindly continue to next page\n"]
 
 
 # ---------------------- Method to return result for the searched query on stack overflow ------------------------
@@ -262,31 +268,31 @@ def get_stackoverflow_result(query, limit=2, **parameters):
         if parameter_key not in ['ans_format', 'result']:
             raise TypeError(
                 "'{}' is an invalid keyword argument for get_myString() \nFor more details for valid parameters try:\nhelp(get_myString) OR\nget_myString.__doc__", parameter_key)
-
         else:
             default_parameters[parameter_key] = parameters[parameter_key]
 
-    # Get all search result for the query from google
+    # Gets all url of search result from google have the mentioned domain_name
     query_links = get_google_searchResult_Links(
-        query+" stack overflow", 'stackoverflow.com')
+        query+" stack overflow", domain_name='stackoverflow.com')
 
-    # Check if stackoverflow results exists
+    # Check if stackoverflow url result exists
     if query_links[0] == -1 or query_links[0] == 0:
         # No results found with query
         return "No Stack Overflow result for Query. :(\nPlease Try again by modifying the query!"
 
     else:
         page_count = 0
-        # Results found with query search
-        # To run test for  result
+        # Result URLs found with domian name search
+        total_stackoverflow_pages_results = len(query_links)
 
-        search_result['result_title'] = (highlight(char='*', n=1) +
-                                         "\nStack Overflow Results:\n")
+        search_result['result_title'] = (highlight(
+            char='*', n=1) + f"\nStack Overflow Results:\tTotal Pages - ({total_stackoverflow_pages_results})\n")
 
-        search_result["total_stackoverflow_pages_results"] = len(query_links)
+        search_result["total_stackoverflow_pages_results"] = total_stackoverflow_pages_results
 
         # LOOP to traverse over stack overflow pages
         for url in query_links:
+            # print(url)
             page_count += 1
             resp = requests.get(url)
             soup = bs(resp.text, features="html.parser")
