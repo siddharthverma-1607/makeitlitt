@@ -31,6 +31,7 @@ Tasks:
 """
 # --------------------- IMPORTS -----------------------
 from unittest import result
+from datetime import datetime
 import requests
 import re
 from bs4 import BeautifulSoup as bs
@@ -126,10 +127,12 @@ def get_google_searchResult_Links(query, domain_name=0):
     """
 
     result_links = []
+    #print("Reaching Base point 1 for get_google_searchResult_Links()")
 
     # Add Try and Except to check for internet and other exceptions
     try:
-        page = requests.get("https://www.google.dz/search?q="+query)
+        page = requests.get("https://www.google.dz/search?q=" +
+                            query)
     except Exception as e:
         if e.__class__.__name__ == "ConnectionError":
             raise SystemExit(
@@ -140,6 +143,7 @@ def get_google_searchResult_Links(query, domain_name=0):
     soup = bs(page.content, features="html.parser")
 
     if domain_name == 0:
+        #print("Reaching Base point 1 for domain_name check for default")
         # Return all search result, irrespective of domain name
         result_links = [re.split(":(?=http)", link["href"].replace("/url?q=", ""))[0].split(
             '&')[0] for link in soup.find_all("a", href=re.compile("(?<=/url\?q=)(htt.*://.*)"))]
@@ -153,6 +157,7 @@ def get_google_searchResult_Links(query, domain_name=0):
 
     for link in soup.find_all("a", href=re.compile("(?<=/url\?q=)(htt.*://.*)")):
         result = re.split(":(?=http)", link["href"].replace("/url?q=", ""))
+        # print(result[0])
         if result[0].find(domain_name) != -1:
             # Check if result contains url with filtered website
             result_links.append(result[0].split('&')[0])
@@ -239,16 +244,16 @@ def get_stackoverflow_result(query, limit=2, **parameters):
     limit [INT]: Number of answers to display per page (DEFAULT - 2)
 
     Optional keyword arguments::
-    ans_format [INT]: 
+    @ans_format [INT]: 
     > 0 - Display only code snippets from answer (DEFAULT)
     > 1 - Display detailed answer
 
-    result [INT]:
+    @result [INT]:
     > 0 [DEFAULT] - To print the result
     > 1 - To get search_result {DICTIONARY} as return for search result
     > 2 - Get result as key:value pair data with raw inputs and only formated answer body
 
-    Verified [BOOL]: 
+    Verified [BOOL] | (Under development) : 
     <TRUE> - To display only the Verified Accepted Correct Answer on the Stack overflow page.
     <FALSE> - To display all the result within the limit. [DEFAULT]
 
@@ -271,6 +276,9 @@ def get_stackoverflow_result(query, limit=2, **parameters):
         else:
             default_parameters[parameter_key] = parameters[parameter_key]
 
+    if default_parameters["result"] == 0:
+        print("Process Initiated: ", datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
+
     # Gets all url of search result from google have the mentioned domain_name
     query_links = get_google_searchResult_Links(
         query+" stack overflow", domain_name='stackoverflow.com')
@@ -278,7 +286,11 @@ def get_stackoverflow_result(query, limit=2, **parameters):
     # Check if stackoverflow url result exists
     if query_links[0] == -1 or query_links[0] == 0:
         # No results found with query
-        return "No Stack Overflow result for Query. :(\nPlease Try again by modifying the query!"
+        if default_parameters["result"] == 0:
+            print(
+                "No Stack Overflow result for Query. :(\nPlease Try again by modifying the query!")
+        else:
+            return "No Stack Overflow result for Query. :(\nPlease Try again by modifying the query!"
 
     else:
         page_count = 0
@@ -420,16 +432,17 @@ def get_stackoverflow_result(query, limit=2, **parameters):
 
 # ---------------------- Main Method --------------------------
 if __name__ == '__main__':
-    print("Process Initiated:")
+    print("Please follow the below documentation for usage:")
+    print("\n", help(get_stackoverflow_result))
 
-    query = "creating class in python"
-    query_to_check_noSnippetAnswers = "git-for-beginners-the-definitive-practical-guide"
+    #query = "functions in python"
+    #query_to_check_noSnippetAnswers = "git-for-beginners-the-definitive-practical-guide"
     #query_with_noAnswers = "Hybris navigation component anatomy"
     # query="sa5d64sa6"
     # print(*get_google_searchResult_Links(query,website),sep="\n")
 
     #get_data = get_stackoverflow_result(query)
-    data = get_stackoverflow_result(query, ans_format=0, result=0)
+    #data = get_stackoverflow_result(query, ans_format=0, result=0)
 
     #get_stackoverflow_result(query_with_noAnswers, ans_format=0)
     # get_stackoverflow_result(query_to_check_noSnippetAnswers, ans_format=0)
