@@ -85,8 +85,8 @@ Use the `Documentation` to get started.
 
 This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
 
-- [![Python][python.org]][python-url]
-- [![Selenium][selenium.com]][selenium-url]
+- [![python][python.org]][python-url]
+- [![selenium][selenium.com]][selenium-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
