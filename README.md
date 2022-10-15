@@ -233,14 +233,14 @@ Discord: [Siddharth#3469](https://discordapp.com/users/Siddharth#3469)
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
-[forks-shield]: https://img.shields.io/github/forks/othneildrew/Best-README-Template.svg?style=for-the-badge
+[forks-shield]: https://img.shields.io/github/forks/siddharthverma-1607/makeitlitt.svg?style=for-the-badge
 [forks-url]: https://github.com/siddharthverma-1607/makeitlitt/network/members
-[stars-shield]: https://img.shields.io/github/stars/othneildrew/Best-README-Template.svg?style=for-the-badge
+[stars-shield]: https://img.shields.io/github/stars/siddharthverma-1607/makeitlitt.svg?style=for-the-badge
 [stars-url]: https://github.com/siddharthverma-1607/makeitlitt/stargazers
-[issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/siddharthverma-1607/makeitlitt.svg?style=for-the-badge
 [issues-url]: https://github.com/siddharthverma-1607/makeitlitt/issues
-[license-shield]: https://img.shields.io/github/license/othneildrew/Best-README-Template.svg?style=for-the-badge
-[license-url]: https://github.com/siddharthverma-1607/makeitlitt/blob/master/LICENSE.txt
+[license-shield]: https://img.shields.io/github/license/siddharthverma-1607/makeitlitt.svg?style=for-the-badge
+[license-url]: https://github.com/siddharthverma-1607/makeitlitt/blob/main/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/siddharth-verma-99b54a117/
 [python]: https://img.shields.io/badge/python%20v3.7-000000?style=for-the-badge&logo=python&logoColor=green
