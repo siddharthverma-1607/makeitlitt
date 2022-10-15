@@ -27,7 +27,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/siddharthverma-1607/makeitlitt">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="images/littUp.png" alt="Logo" width="80" height="80">
   </a>
 
   <h3 align="center">MAKEILITT</h3>
@@ -85,8 +85,8 @@ Use the `Documentation` to get started.
 
 This section should list any major frameworks/libraries used to bootstrap your project. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
 
-- [![python][python.org]][python-url]
-- [![selenium][selenium.com]][selenium-url]
+- [![python][python-shield]][python-url]
+- [![selenium][selenium-shield]][selenium-url]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -243,7 +243,7 @@ Discord: [Siddharth#3469](https://discordapp.com/users/Siddharth#3469)
 [license-url]: https://github.com/siddharthverma-1607/makeitlitt/blob/main/LICENSE
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/siddharth-verma-99b54a117/
-[python]: https://img.shields.io/badge/python%20v3.7-000000?style=for-the-badge&logo=python&logoColor=green
+[python-shield]: https://img.shields.io/badge/python%20v3.7-000000?style=for-the-badge&logo=python&logoColor=green
 [python-url]: https://www.python.org/
-[selenium]: https://img.shields.io/badge/Selenium-DD0031?style=for-the-badge&logo=selenium&logoColor=white
+[selenium-shield]: https://img.shields.io/badge/Selenium-DD0031?style=for-the-badge&logo=selenium&logoColor=white
 [selenium-url]: https://www.selenium.dev/
