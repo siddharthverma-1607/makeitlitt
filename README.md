@@ -30,7 +30,7 @@
     <img src="images/littUp.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">MAKEILITT</h3>
+  <h3 align="center">MAKEITLITT</h3>
 
   <p align="center">
     An awesome opensource project for adding custom dynamic methods and functionality for Built-in Data Types!<br />Creating general modules for repetative tasks.  (Which have a potential of being an project in itself 😉)
@@ -171,6 +171,49 @@ sf.get_stackoverflow_result("list slicing in python")
 from makeitlitt import stackoverflow as sf
 search_results_snippets = sf.get_stackoverflow_result("list slicing in python",result=2) #Gets only code snippets from the answer
 search_results_detailed = sf.get_stackoverflow_result("list slicing in python",ans_format=1,result=2) #Gets detailed long answer
+```
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+1. For fetching all the search result URLs on Google search engine for a search query:
+   To get the URL search results for the query to perform scrapping, SEO analysis or any other user case.
+   module name: stackoverflow
+   Import:
+
+```sh
+from makeitlitt import stackoverflow
+```
+
+Method name: get_google_searchResult_Links(query, domain_name=0)
+Method Documentation:
+
+> Method to get URL results from google search engine
+
+    Parameters:
+    query [STRING]: Query to search.
+    domain [STRING]: To filter the result based on a particular website.
+                    [Default]: 0 --> Get All results irrespective of domain name
+
+    Return:
+    result_links [List]:
+        [...,] - Result Urls scraped for the search page
+        [-1] - If no result found for filtered website with requested query
+        [0] - If no result found on the Internet
+
+Examples:
+
+- To get all the URLs of searched query as result
+
+```sh
+from makeitlitt import stackoverflow as sf
+sf.get_google_searchResult_Links("How to create a pancake?")
+```
+
+- To get all the URLs of searched query from a particular domain
+
+```sh
+from makeitlitt import stackoverflow as sf
+sf.get_google_searchResult_Links("How to create a dictionary in python?", domain_name="stackoverflow.com")
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

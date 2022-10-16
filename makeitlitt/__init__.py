@@ -2,7 +2,7 @@
 It should usually be kept quite simple, but it’s a good place to put package constants, documentation, and so on:"""
 
 from makeitlitt import generate
+from makeitlitt import stackoverflow
 
-
-# Version of the realpython-reader package
-__version__ = "0.0.3"
+# Version of the makeitlitt package
+__version__ = "0.1.0"
