@@ -118,16 +118,16 @@ pip install makeitlitt
 
 ## Usage
 
-1. For Stackoverflow module:
-   To get the stack overflow results for the query we search daily for confirmation 😁
-   module name: stackoverflow
-   Import:
+1. For Stackoverflow module:<br />
+   To get the stack overflow results for the query we search daily for confirmation 😁<br />
+   module name: stackoverflow <br />
+   Import: <br />
 
 ```sh
 from makeitlitt import stackoverflow
 ```
 
-Method name: get_stackoverflow_result(query, limit=2, \*\*parameters)
+Method name: get_stackoverflow_result(query, limit=2, \*\*parameters)<br />
 Method Documentation:
 
 > Method to show stack overflow results.
@@ -175,16 +175,16 @@ search_results_detailed = sf.get_stackoverflow_result("list slicing in python",a
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-1. For fetching all the search result URLs on Google search engine for a search query:
-   To get the URL search results for the query to perform scrapping, SEO analysis or any other user case.
-   module name: stackoverflow
+2. For fetching all the search result URLs on Google search engine for a search query:<br />
+   To get the URL search results for the query to perform scrapping, SEO analysis or any other user case.<br />
+   module name: stackoverflow<br />
    Import:
 
 ```sh
 from makeitlitt import stackoverflow
 ```
 
-Method name: get_google_searchResult_Links(query, domain_name=0)
+Method name: get_google_searchResult_Links(query, domain_name=0)<br />
 Method Documentation:
 
 > Method to get URL results from google search engine
