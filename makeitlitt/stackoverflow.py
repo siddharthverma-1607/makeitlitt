@@ -1,33 +1,11 @@
 """
-Tasks:
-1. Scrap data from each URL -- DONE
-2. Get question and question vote count -- DONE
-3. Check total Answers present in page -- DONE
-    If present:
-        1. Get Answer and anser vote count -- DONE
-        2. Scrap code from answer -- DONE
-        3. Display answer and vote count -- DONE
+Package to get stackoverflow query as a service
 
-4. Argumrents to get detailed or summarized results [flag] -- DONE
-5. Check for exceptions and internet connection -- DONE
-6. Create snippet result for a quick view for user -- DONE
-7. ADD method to print snippet in a box. -- DONE
-8. ADD functionality: 
-    > to let user see page 1 by 1, by clicking Enter for next or Press 'x' + 'ENTER' to break further print results  -- DONE  
-9. ADD 'result' [Optional Parameter] - [INT] to get the complete output as a STRING, instead of printing result -- DONE
-    > 0 [DEFAULT] - To print the result -- DONE  
-    > 1 - To Get search_result {Dictionary} as return for search result -- DONE  
-    > 2 - To Get search_result + raw data result as key:value pair -- DONE
-10. ADD 'verified' [Optional Parameter] as an optional parameter to only display the verified answer from the page
-11. Store complete print in a List[..,answer_pages] named 'search_result' and then later join as String to print/return just as implemented in 'text_in_box()' method.
-    Benifits: -- DONE
-        > Ease in implementing Break/Next option to move on page over a loop -- DONE  
-        > Ease to implement the 'result' [Optional Parameter] -- DONE
-        > STORE answer_pages as dictionary as {'page-1':'<page 1 data>', 'page-2':'<page 2 data>',...,'page-n':'<page n data>'} -- DONE
-12. Implement a 'print_stackOverflow_result' method to display result with implementing STEP (8) within it -- DONE
-13. STRORE page_result[1] for each page excluding answer_body as we will get that from search_result -- DONE
-14. Format DETAILED Page better -- DONE
-15. Testing + Documentation
+> get_google_searchResult_Links() : Method to get urls results from google search engine
+To know more -> help(get_google_searchResult_Links)
+
+> get_stackoverflow_result() : Method to show stack overflow results.
+To know more -> help (get_stackoverflow_result)
 """
 # --------------------- IMPORTS -----------------------
 from unittest import result
